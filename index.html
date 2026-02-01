@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Wallpaper Interactif - Rachid Bounoua</title>
+    <style>
+        /* Optimisation pour Wallpaper Engine */
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* REMPLACEMENT DU GRADIENT PAR FOND.PNG */
+            background: url('fond.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #000000;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Ajout d'une légère sur-couche pour garantir la lisibilité si l'image est claire */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.1); /* Ajustez l'opacité au besoin */
+            z-index: 1;
+        }
+
+        .app-container {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            max-width: 600px;
+            width: 85%;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Barre de Recherche */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .search-container input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: #000000;
+            font-weight: 700;
+            outline: none;
+        }
+
+        .search-btn, .geo-btn {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Horloge */
+        .time-display {
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 5px;
+        }
+
+        .date-display {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: capitalize;
+        }
+
+        .seconds {
+            font-size: 2.2rem;
+            font-weight: 400;
+            opacity: 0.7;
+        }
+
+        /* Météo */
+        .weather-section {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .temperature { 
+            font-size: 3.5rem; 
+            font-weight: 900; 
+        }
+
+        .weather-desc { 
+            font-size: 1.3rem; 
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .location { 
+            font-size: 1.1rem; 
+            font-weight: 800; 
+            margin-bottom: 15px;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .detail-item {
+            background: rgba(255, 255, 255, 0.4);
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .detail-label { 
+            font-size: 0.75rem; 
+            font-weight: 800;
+            color: rgba(0,0,0,0.6);
+            margin-bottom: 4px;
+        }
+
+        /* Auteur - Image Agrandie */
+        .author-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .author-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .author-name { font-size: 1.3rem; font-weight: 900; }
+        .author-title { font-size: 0.9rem; font-weight: 600; opacity: 0.8; }
+
+        @media (max-width: 480px) {
+            .time-display { font-size: 4rem; }
+            .weather-details { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="search-container">
+            <input type="text" id="city-input" placeholder="Ville...">
+            <button class="search-btn" onclick="searchCity()">🔍</button>
+            <button class="geo-btn" onclick="getWeather()">📍</button>
+        </div>
+
+        <div class="clock-section">
+            <div class="date-display" id="date">...</div>
+            <div class="time-display">
+                <span id="hours">00</span>:<span id="minutes">00</span><span class="seconds" id="seconds">:00</span>
+            </div>
+        </div>
+
+        <div class="weather-section">
+            <div id="weather-icon" style="font-size: 3rem;">🌡️</div>
+            <div class="temperature" id="temp">--°</div>
+            <div class="weather-desc" id="weather-desc">Chargement...</div>
+            <div class="location" id="location">--</div>
+            
+            <div class="weather-details">
+                <div class="detail-item"><div class="detail-label">RESSENTI</div><div id="feels-like">--°</div></div>
+                <div class="detail-item"><div class="detail-label">HUMIDITÉ</div><div id="humidity">--%</div></div>
+                <div class="detail-item"><div class="detail-label">VENT</div><div id="wind">-- km/h</div></div>
+            </div>
+        </div>
+
+        <div class="author-section">
+            <img src="rachid.png" alt="Rachid Bounoua" class="author-img" onerror="this.src='https://via.placeholder.com/100/000000/ffffff?text=R'">
+            <div class="author-info">
+                <div class="author-name">Rachid Bounoua</div>
+                <div class="author-title">Développeur & Designer</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('hours').textContent = String(now.getHours()).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('seconds').textContent = ':' + String(now.getSeconds()).padStart(2, '0');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date').textContent = now.toLocaleDateString('fr-FR', options);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        async function searchCity() {
+            const city = document.getElementById('city-input').value;
+            if (!city) return;
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=fr&format=json`);
+                const data = await res.json();
+                if (data.results) {
+                    const { latitude, longitude, name, country } = data.results[0];
+                    fetchWeather(latitude, longitude, `${name}, ${country}`);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function getWeather() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    fetchWeather(p.coords.latitude, p.coords.longitude);
+                    getCityName(p.coords.latitude, p.coords.longitude);
+                }, () => fetchWeather(48.8566, 2.3522, "Paris"));
+            } else {
+                fetchWeather(48.8566, 2.3522, "Paris");
+            }
+        }
+
+        async function fetchWeather(lat, lon, loc = null) {
+            try {
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`);
+                const data = await res.json();
+                const c = data.current;
+                document.getElementById('temp').textContent = Math.round(c.temperature_2m) + '°';
+                document.getElementById('feels-like').textContent = Math.round(c.apparent_temperature) + '°';
+                document.getElementById('humidity').textContent = c.relative_humidity_2m + '%';
+                document.getElementById('wind').textContent = c.wind_speed_10m + ' km/h';
+                
+                const iconMap = { 0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 61: "🌧️", 95: "⛈️" };
+                document.getElementById('weather-icon').textContent = iconMap[c.weather_code] || "🌡️";
+                document.getElementById('weather-desc').textContent = "Météo Actuelle";
+
+                if (loc) document.getElementById('location').textContent = loc;
+            } catch (e) { console.error(e); }
+        }
+
+        async function getCityName(lat, lon) {
+            try {
+                const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=fr`);
+                const data = await res.json();
+                document.getElementById('location').textContent = data.city || data.locality || "Ma position";
+            } catch (e) { document.getElementById('location').textContent = "Position actuelle"; }
+        }
+
+        document.getElementById('city-input').addEventListener('keypress', e => { if (e.key === 'Enter') searchCity(); });
+        
+        getWeather();
+    </script>
+</body>
+</html>
